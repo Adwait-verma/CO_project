@@ -80,3 +80,27 @@ func7_codes = {"add": "0000000",
                "or": "0000000",
                "xor": "0000000"}
 
+def imm_to_bin(value, bits):
+    return format(value & ((1 << bits) - 1), f'0{bits}b')
+
+def validate_register(reg_name, line_num):
+    reg_name = reg_name.strip().lower()
+    if reg_name not in register_codes:
+        sys.exit(f"Error: Register '{reg_name}' not found at line {line_num + 1}")
+    return register_codes[reg_name]
+
+def collect_labels(program):
+    labels = {}
+    instruction_count = 0
+    for line_num, line in enumerate(program):
+        parts = line.split()
+        if parts and parts[0].endswith(":"):
+            label_name = parts[0][:-1]
+            if label_name in labels:
+                sys.exit(f"Error: Duplicate label '{label_name}' at line {line_num + 1}")
+            labels[label_name] = instruction_count * 4
+        else:
+            instruction_count += 1
+    return labels
+
+
