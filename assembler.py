@@ -102,5 +102,39 @@ def collect_labels(program):
         else:
             instruction_count += 1
     return labels
+def convert_to_binary(inst, line_num, labels):
+    parts = inst.replace(",", " ").split()
+    parts = [p.strip() for p in parts if p.strip()]
+
+    if len(parts) == 0 or parts[0].endswith(":"):
+        return None
+
+    opcode = parts[0]
+
+    if opcode == "jal":
+        imm = imm_to_bin(labels.get(parts[2], int(parts[2])), 20)
+        return imm + validate_register(parts[1], line_num) + op["jal"]
+
+    if opcode in func7_codes:
+        return func7_codes[opcode] + validate_register(parts[3], line_num) + validate_register(parts[2], line_num) + func3_codes[opcode] + validate_register(parts[1], line_num) + op[opcode]
+    
+    if opcode in func3_codes:
+        if "(" in parts[2]:
+            match = re.match(r"(-?\d+)\((\w+)\)", parts[2])  
+            if not match:
+                sys.exit(f"Error: Invalid memory format '{parts[2]}' at line {line_num + 1}")
+            imm, rs1 = imm_to_bin(int(match.group(1)), 12), validate_register(match.group(2), line_num)
+        else:
+            imm, rs1 = imm_to_bin(int(parts[3]), 12), validate_register(parts[2], line_num)
+        return imm + rs1 + func3_codes[opcode] + validate_register(parts[1], line_num) + op[opcode]
+
+    if opcode in ["beq", "bne", "blt", "bge", "bltu"]:
+        imm = imm_to_bin(labels.get(parts[3], int(parts[3])), 12)
+        return imm[:7] + validate_register(parts[2], line_num) + validate_register(parts[1], line_num) + func3_codes[opcode] + imm[7:] + op[opcode]
+    
+    if opcode == "halt":
+        return "00000000000000000000000001100011"
+    
+    sys.exit(f"Error: Unknown instruction '{opcode}' at line {line_num + 1}")
 
 
