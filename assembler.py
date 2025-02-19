@@ -136,5 +136,22 @@ def convert_to_binary(inst, line_num, labels):
         return "00000000000000000000000001100011"
     
     sys.exit(f"Error: Unknown instruction '{opcode}' at line {line_num + 1}")
+input_file = "input.asm"
+output_file = "output.bin"
 
+with open(input_file, "r") as f:
+    program = [line.strip() for line in f.readlines() if line.strip()]
+
+labels = collect_labels(program)
+
+binary_output = []
+for line_num, inst in enumerate(program):
+    binary_inst = convert_to_binary(inst, line_num, labels)
+    if binary_inst:
+        binary_output.append(binary_inst)
+
+with open(output_file, "w") as f:
+    f.write("\n".join(binary_output))
+
+print(f"Assembly translation completed. Binary output written to {output_file}")
 
