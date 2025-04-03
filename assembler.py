@@ -75,7 +75,7 @@ func7_codes = {"add": "0000000",
                "slt": "0000000", 
                "srl": "0000000", 
                "or": "0000000",
-               "xor": "0000000"}
+              }
 
 def imm_to_bin(value, bits):
     return format(value & ((1 << bits) - 1), f'0{bits}b')
